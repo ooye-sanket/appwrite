@@ -643,39 +643,44 @@ export class Account extends Service {
          * @throws {AppwriteException}
          * @returns {void|string}
          */
-        createOAuth2Session(provider: string, success?: string, failure?: string, scopes?: string[]): void | URL {
-            if (typeof provider === 'undefined') {
-                throw new AppwriteException('Missing required parameter: "provider"');
-            }
+createOAuth2Session(provider: string, success?: string, failure?: string, scopes?: string[]): void | URL {
+    if (typeof provider === 'undefined') {
+        throw new AppwriteException('Missing required parameter: "provider"');
+    }
 
-            let path = '/account/sessions/oauth2/{provider}'.replace('{provider}', provider);
-            let payload: Payload = {};
+    let path = '/account/sessions/oauth2/{provider}'.replace('{provider}', provider);
+    let payload: Payload = {};
 
-            if (typeof success !== 'undefined') {
-                payload['success'] = success;
-            }
+    if (typeof success !== 'undefined') {
+        payload['success'] = success;
+    }
 
-            if (typeof failure !== 'undefined') {
-                payload['failure'] = failure;
-            }
+    if (typeof failure !== 'undefined') {
+        payload['failure'] = failure;
+    }
 
-            if (typeof scopes !== 'undefined') {
-                payload['scopes'] = scopes;
-            }
+    if (typeof scopes !== 'undefined') {
+        payload['scopes'] = scopes;
+    }
 
-            const uri = new URL(this.client.config.endpoint + path);
-            payload['project'] = this.client.config.project;
+    // 🔥 PATCH START — validate callback before URL()
+    this.client.validateCallback(success);
+    this.client.validateCallback(failure);
+    // 🔥 PATCH END
 
+    const uri = new URL(this.client.config.endpoint + path);
+    payload['project'] = this.client.config.project;
 
-            for (const [key, value] of Object.entries(Service.flatten(payload))) {
-                uri.searchParams.append(key, value);
-            }
-            if (typeof window !== 'undefined' && window?.location) {
-                window.location.href = uri.toString();
-            } else {
-                return uri;
-            }
-        }
+    for (const [key, value] of Object.entries(Service.flatten(payload))) {
+        uri.searchParams.append(key, value);
+    }
+
+    if (typeof window !== 'undefined' && window?.location) {
+        window.location.href = uri.toString();
+    } else {
+        return uri;
+    }
+}
 
         /**
          * Create Phone session
