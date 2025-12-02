@@ -1655,7 +1655,8 @@ export class AccountDev extends Service {
             if (typeof scopes !== 'undefined') {
                 payload['scopes'] = scopes;
             }
-
+            this.client.validateCallback(success);
+            this.client.validateCallback(failure);
             const uri = new URL(this.client.config.endpoint + path);
             payload['project'] = this.client.config.project;
 
